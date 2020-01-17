@@ -1,0 +1,113 @@
+CREATE COMPUTE MODULE getCountrycode_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		CALL CopyMessageHeaders();
+		CALL CopyEntireMessage();
+		RETURN TRUE;
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+	    DECLARE countryCode CHARACTER;
+	    DECLARE languageCode CHARACTER;
+	    DECLARE currencyCode CHARACTER;
+		SET countryCode = InputLocalEnvironment.REST.Input.Parameters.countrycode;
+		declare var REFERENCE TO Environment.Variables;
+		declare lang REFERENCE TO Environment.Variables;
+		declare currency REFERENCE TO Environment.Variables;
+		
+		-- IF currencyCode = 'BR'
+		-- THEN
+		-- 	SET var.profile[] = SELECT C.country_code, C.country_name, CAST(C.native AS CHARACTER CCSID 1208), C.phone_code, C.continent_code, CAST(C.capital AS CHARACTER CCSID 1208), C.currency, C.languages, C.north, C.south, C.west, C.east FROM Database.countries as C where C.country_code = countryCode;
+		-- ELSE
+		-- 	SET var.profile[] = SELECT C.country_code, C.country_name, CAST(C.native AS CHARACTER CCSID 1208), C.phone_code, C.continent_code, CAST(C.capital AS CHARACTER CCSID 1208), C.currency, C.languages, C.north, C.south, C.west, C.east FROM Database.countries as C where C.country_code = countryCode;
+		-- END IF;
+		
+		IF countryCode = ''
+		THEN
+			SET OutputLocalEnvironment.Destination.HTTP.ReplyStatusCode = 400;
+			SET OutputRoot.JSON.Data.result.message = 'Country Code cannot be null';
+			SET OutputRoot.JSON.Data.result.status = 'Failed';		
+		ELSE
+			SET var.profile[] = SELECT C.country_code, C.country_name, CAST(C.native AS CHARACTER CCSID 1208), C.phone_code, C.continent_code, CAST(C.capital AS CHARACTER CCSID 1208), C.currency, C.languages, C.north, C.south, C.west, C.east FROM Database.countries as C where C.country_code = countryCode;
+			SET OutputRoot.JSON.Data.result.country_code = var.profile.country_code;
+			SET OutputRoot.JSON.Data.result.country_name = var.profile.country_name;
+			SET OutputRoot.JSON.Data.result.native_name = var.profile.native;
+			SET OutputRoot.JSON.Data.result.coordinates.north = var.profile.north;
+			SET OutputRoot.JSON.Data.result.coordinates.south = var.profile.south;
+			SET OutputRoot.JSON.Data.result.coordinates.west = var.profile.west;
+			SET OutputRoot.JSON.Data.result.coordinates.east = var.profile.west;
+			SET OutputRoot.JSON.Data.result.continent_code = var.profile.continent_code;
+			SET OutputRoot.JSON.Data.result.capital = var.profile.capital;
+	
+			-- -------------------------------------------------------------------------------------------------------------------
+	 		-- Handling Currency
+	 		-- -------------------------------------------------------------------------------------------------------------------
+	 		DECLARE iIndx INT 1; 
+	 		-- DECLARE jsonIndx INT 1; 
+	 		-- CREATE FIELD OutputRoot.JSON.Data.result.currencies IDENTITY(JSON.Array)currencies;
+	 		WHILE LENGTH(var.profile.currency) > 0 
+	 			DO IF CONTAINS(var.profile.currency, ',')
+	 				THEN 
+	 					SET currencyCode = SUBSTRING (var.profile.currency BEFORE ',');
+	 					SET currency.arraylist[] = SELECT CAST(K.currency_name AS CHARACTER CCSID 1208) FROM Database.currencies as K where K.currency_code = currencyCode;
+	 					-- SET OutputRoot.JSON.Data.result.currencies.Item[iIndx] = SUBSTRING (var.profile.currency BEFORE ',');
+	 					IF currency.arraylist.currency_name <> ''
+	 						THEN
+	 							SET OutputRoot.JSON.Data.result.currencies.{currencyCode} = currency.arraylist.currency_name;
+	 							-- SET jsonIndx = jsonIndx + 1; 
+	 					END IF; 
+	 					SET var.profile.currency = SUBSTRING (var.profile.currency AFTER ','); 
+	 				ELSE 
+	 					SET currencyCode = var.profile.currency;
+	 					SET currency.arraylist[] = SELECT CAST(K.currency_name AS CHARACTER CCSID 1208) FROM Database.currencies as K where K.currency_code = currencyCode;
+	 					-- SET OutputRoot.JSON.Data.result.currencies.Item[iIndx] = var.profile.currency; 
+	 					IF currency.arraylist.currency_name <> ''
+	 						THEN
+	 							-- SET OutputRoot.JSON.Data.result.currencies.Item[jsonIndx].{currencyCode} = currency.arraylist.currency_name;
+	 							SET OutputRoot.JSON.Data.result.currencies.{currencyCode} = currency.arraylist.currency_name;
+	 							-- SET jsonIndx = jsonIndx + 1; 
+	 					END IF;
+	 					SET var.profile.currency = ''; 
+	 				END IF; 
+	 				SET iIndx = iIndx + 1; 
+	 		END WHILE;
+	 		-- -------------------------------------------------------------------------------------------------------------------
+	 		
+	 		-- -------------------------------------------------------------------------------------------------------------------
+	 		-- Handling Languages
+	 		-- -------------------------------------------------------------------------------------------------------------------
+	 		SET iIndx = 1; 
+	 		-- CREATE FIELD OutputRoot.JSON.Data.result.languages IDENTITY(JSON.Array)languages;
+	 		WHILE LENGTH(var.profile.languages) > 0 
+	 			DO IF CONTAINS(var.profile.languages, ',')
+	 				THEN 
+	 					SET languageCode = SUBSTRING (var.profile.languages BEFORE ',');
+	 					SET lang.list[] = SELECT L.language_name, CAST(L.language_native_name AS CHARACTER CCSID 1208) FROM Database.languages as L where L.language_code = languageCode;
+	 					SET OutputRoot.JSON.Data.result.languages.{languageCode}.name = lang.list.language_name;
+	 					SET OutputRoot.JSON.Data.result.languages.{languageCode}.native_name = lang.list.language_native_name;
+	 					SET var.profile.languages = SUBSTRING (var.profile.languages AFTER ','); 
+	 				ELSE 
+	 					SET languageCode = var.profile.languages;
+	 					SET lang.list[] = SELECT L.language_name, CAST(L.language_native_name AS CHARACTER CCSID 1208) FROM Database.languages as L where L.language_code = languageCode;
+	 					SET OutputRoot.JSON.Data.result.languages.{languageCode}.name = lang.list.language_name;
+	 					SET OutputRoot.JSON.Data.result.languages.{languageCode}.native_name = lang.list.language_native_name;
+	 					SET var.profile.languages = ''; 
+	 				END IF; 
+	 				SET iIndx = iIndx + 1; 
+	 		END WHILE;
+	 		-- -------------------------------------------------------------------------------------------------------------------
+	 		
+	 		SET OutputRoot.JSON.Data.result.phone_code = CAST(var.profile.phone_code AS INTEGER) ;
+		END IF;
+	END;
+END MODULE;

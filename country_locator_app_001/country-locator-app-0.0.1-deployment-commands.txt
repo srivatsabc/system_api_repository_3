@@ -1,0 +1,96 @@
+===============================================================================
+Labelling nodes
+===============================================================================
+oc edit namespace system-api-ns
+openshift.io/node-selector: ""
+
+===============================================================================
+Build Code and Docker Container
+===============================================================================
+
+winpty docker login --username restio
+wipro123
+
+docker build -t restio/ibmace:11.0.0.6 .
+docker push restio/ibmace:11.0.0.6
+
+docker build -t srivatsabc/country-locator-app:os-s-api-v0.0.1 .
+docker push srivatsabc/country-locator-app:os-s-api-v0.0.1
+
+===============================================================================
+Remove images from local docker repo:
+===============================================================================
+docker images
+docker rmi
+
+===============================================================
+Create namespace:
+===============================================================
+oc create namespace system-api-ns
+
+===============================================================
+Create and verify configmap:
+===============================================================
+oc create -n system-api-ns configmap country-locator-app-v001-config --from-literal=RUNTIME_ENV_TYPE=okd
+
+oc -n system-api-ns get configmap
+
+===============================================================
+Create deployment using yaml:
+===============================================================
+oc apply -n system-api-ns -f country-locator-app-0.0.1-deployment.yaml
+
+===============================================================
+Check deployments within namespace:
+===============================================================
+oc -n system-api-ns get deployments
+
+===============================================================
+Check status of pods within namespace:
+===============================================================
+oc -n system-api-ns get pods
+
+oc -n system-api-ns get pods -o wide
+
+===============================================================
+Check service within namespace to access api:
+===============================================================
+oc -n system-api-ns create -f country-locator-app-0.0.1-service.yaml
+
+===============================================================
+Check service within namespace:
+===============================================================
+oc -n system-api-ns get svc
+
+
+===============================================================
+Access api on the service port:
+===============================================================
+http://127.0.0.1:30087/api/routes/LHR
+
+
+===============================================================
+Delete service and deployment
+===============================================================
+oc delete pod system-api-pod --namespace=system-api-ns
+
+oc delete deployment country-locator-app --namespace=system-api-ns
+
+oc delete service country-locator-app --namespace=system-api-ns
+
+
+========================= EXTRAS ======================================
+
+oc api-resources --namespaced=true
+
+oc exec -n system-api-ns -it country-locator-app-c56d9bdc-gdz5g -- /bin/bash
+
+mysql.system-of-records-ns.svc.cluste.local:3306
+
+Not Used
+
+oc apply -f deployment.yml
+
+oc expose -n nginx-namespace deployment/nginx-deployment --type="NodePort" --port 80
+
+http://nginx-deployment:31525

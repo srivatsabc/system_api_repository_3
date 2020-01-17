@@ -1,0 +1,64 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "title" : "country_locator_app_001",
+    "version" : "0.0.2",
+    "description" : "country_locator_app_001"
+  },
+  "paths" : {
+    "/{countrycode}" : {
+      "get" : {
+        "operationId" : "getCountrycode",
+        "responses" : {
+          "200" : {
+            "description" : "The operation was successful.",
+            "schema" : {
+              "$ref" : "#/definitions/CountryLocator"
+            }
+          }
+        },
+        "produces" : [ "application/json" ],
+        "description" : "Retrieve country details by countrycode",
+        "parameters" : [ {
+          "required" : true,
+          "name" : "countrycode",
+          "in" : "path",
+          "type" : "string",
+          "description" : "Retrieve country details by countrycode"
+        } ]
+      }
+    }
+  },
+  "basePath" : "/sysapi/v1/country",
+  "definitions" : {
+    "CountryLocator" : {
+      "type" : "object",
+      "properties" : {
+        "country_code" : {
+          "type" : "string"
+        },
+        "country_name" : {
+          "type" : "string"
+        },
+        "native" : {
+          "type" : "string"
+        },
+        "phone_code" : {
+          "type" : "string"
+        },
+        "continent_code" : {
+          "type" : "string"
+        },
+        "capital" : {
+          "type" : "string"
+        },
+        "currency" : {
+          "type" : "string"
+        },
+        "languages" : {
+          "type" : "string"
+        }
+      }
+    }
+  }
+}
