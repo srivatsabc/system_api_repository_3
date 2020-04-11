@@ -1,0 +1,1 @@
+mqsicreatebar -data C:\IBM\ACE\workspace\system_api_repository_3_remote -b C:\IBM\ACE\workspace\system_api_repository_3_remote\country_locator_app_001\target\ace\country_locator_app_001.bar -cleanBuild -a country_locator_app_001 -deployAsSource -trace -v C:\IBM\ACE\workspace\system_api_repository_3_remote\country_locator_app_001\target\createbartrace.txt
