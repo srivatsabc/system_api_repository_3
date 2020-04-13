@@ -115,5 +115,26 @@
 		<nature>com.ibm.etools.mft.restapi.ui.Nature</nature>
 		<nature>com.ibm.etools.msgbroker.tooling.messageBrokerProjectNature</nature>
 		<nature>com.ibm.etools.msgbroker.tooling.applicationNature</nature>
+		<nature>com.ibm.etools.mft.bar.ext.barnature</nature>
 	</natures>
+	<filteredResources>
+		<filter>
+			<id>1586788839940</id>
+			<name></name>
+			<type>10</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-.metadata</arguments>
+			</matcher>
+		</filter>
+		<filter>
+			<id>1586788839948</id>
+			<name></name>
+			<type>6</type>
+			<matcher>
+				<id>org.eclipse.ui.ide.multiFilter</id>
+				<arguments>1.0-name-matches-false-false-.gitignore</arguments>
+			</matcher>
+		</filter>
+	</filteredResources>
 </projectDescription>
