@@ -1,6 +1,6 @@
 FROM restio/ibmace:11.0.0.6
 
-# Maintainer Srivatsa
+# Maintainer Srivatsa (srivatsabc@gmail.com)
 
 # Custom Scripts for the microservice -- country-locator-app
 COPY odbc.ini /home/aceuser/ace-server/odbc
